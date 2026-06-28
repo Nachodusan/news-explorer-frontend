@@ -44,7 +44,7 @@ src/
 │   ├── RegisterModal/ # formulario de inscripción
 │   ├── InfoTooltip/   # confirmación de registro
 │   └── ...            # About, Footer, Preloader, NotFound, ProtectedRoute
-├── fonts/             # fuentes locales (Inter, Roboto Slab) + @font-face
+├── vendor/            # recursos third-party: normalize.css + fonts/ (@font-face)
 ├── images/            # iconos e imágenes en SVG
 ├── contexts/
 │   └── CurrentUserContext.js

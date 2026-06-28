@@ -27,6 +27,7 @@
   border-radius: 80px;
   background: var(--color-white);
   color: var(--color-black);
+  font-family: var(--font-accent);
   font-size: 18px;
   line-height: 24px;
   font-weight: 500;

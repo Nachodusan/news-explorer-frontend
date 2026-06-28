@@ -1,4 +1,5 @@
-@import "./fonts/fonts.css";
+@import "./vendor/normalize.css";
+@import "./vendor/fonts/fonts.css";
 
 :root {
   /* Colors */
@@ -18,8 +19,9 @@
   --color-page-bg: #f5f6f7;
 
   /* Fonts (system fonts as fallback for each family) */
-  --font-main: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-main: "Roboto", "Helvetica Neue", Arial, sans-serif;
   --font-heading: "Roboto Slab", Georgia, "Times New Roman", serif;
+  --font-accent: "Inter", "Helvetica Neue", Arial, sans-serif;
 }
 
 *,

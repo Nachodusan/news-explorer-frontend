@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 464 464" width="464" height="464">
+  <rect width="464" height="464" fill="#1A1B22"/>
+  <circle cx="232" cy="180" r="78" fill="#3a3b44"/>
+  <path d="M104 396c0-70 57.3-118 128-118s128 48 128 118" fill="#3a3b44"/>
+  <text x="232" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" fill="#b6bcbf">Autor</text>
+</svg>

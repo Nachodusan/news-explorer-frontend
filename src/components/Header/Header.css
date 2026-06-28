@@ -1,0 +1,79 @@
+.header {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Home hero: dark photo background behind the nav + title + search form. */
+.header_home {
+  min-height: 536px;
+  background-image: linear-gradient(
+      rgba(26, 27, 34, 0.6),
+      rgba(26, 27, 34, 0.85)
+    ),
+    url("https://picsum.photos/seed/newsexplorer/1440/536");
+  background-size: cover;
+  background-position: center;
+  padding-bottom: 80px;
+}
+
+.header_theme_light {
+  background: var(--color-white);
+  border-bottom: 1px solid rgba(26, 27, 34, 0.2);
+}
+
+.header__hero {
+  max-width: 608px;
+  margin: 0 auto;
+  padding: 80px 16px 0;
+  text-align: center;
+}
+
+.header__title {
+  font-family: var(--font-heading);
+  font-size: 60px;
+  line-height: 64px;
+  font-weight: 400;
+  color: var(--color-white);
+  margin: 0 0 32px;
+}
+
+.header__subtitle {
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--color-white);
+  margin: 0 0 88px;
+}
+
+@media screen and (max-width: 1024px) {
+  .header_home {
+    min-height: 400px;
+  }
+  .header__title {
+    font-size: 36px;
+    line-height: 40px;
+    margin-bottom: 16px;
+  }
+  .header__subtitle {
+    margin-bottom: 48px;
+  }
+  .header__hero {
+    padding-top: 38px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .header__title {
+    font-size: 36px;
+    line-height: 40px;
+    text-align: left;
+  }
+  .header__subtitle {
+    text-align: left;
+    font-size: 18px;
+  }
+  .header__hero {
+    text-align: left;
+    padding: 30px 16px 0;
+  }
+}

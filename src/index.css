@@ -1,0 +1,90 @@
+@import "./fonts/fonts.css";
+
+:root {
+  /* Colors */
+  --color-bg-dark: #1a1b22;
+  --color-white: #ffffff;
+  --color-black: #1a1b22;
+  --color-accent: #2f71e5;
+  --color-accent-hover: #347eff;
+  --color-accent-active: #2a65cc;
+  --color-gray: #b6bcbf;
+  --color-text-secondary: #4d4d4d;
+  --color-date: #b6bcbf;
+  --color-source: #b6bcbf;
+  --color-error: #ff0000;
+  --color-overlay: rgba(0, 0, 0, 0.5);
+  --color-card-bg: #ffffff;
+  --color-page-bg: #f5f6f7;
+
+  /* Fonts (system fonts as fallback for each family) */
+  --font-main: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-heading: "Roboto Slab", Georgia, "Times New Roman", serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-white);
+  color: var(--color-black);
+  min-width: 320px;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+input {
+  font-family: inherit;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page__content {
+  flex: 1 0 auto;
+}
+
+/* Reusable button transition */
+.hover-opacity {
+  transition: opacity 0.2s ease;
+}
+.hover-opacity:hover {
+  opacity: 0.8;
+}

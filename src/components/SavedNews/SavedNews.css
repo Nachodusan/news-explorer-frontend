@@ -1,0 +1,29 @@
+.saved-news {
+  width: 100%;
+}
+
+.saved-news__list {
+  background: var(--color-page-bg);
+  padding: 56px 104px 80px;
+}
+
+.saved-news__empty {
+  max-width: 500px;
+  margin: 40px auto;
+  text-align: center;
+  font-size: 18px;
+  line-height: 24px;
+  color: #b6bcbf;
+}
+
+@media screen and (max-width: 1024px) {
+  .saved-news__list {
+    padding: 32px 40px 60px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .saved-news__list {
+    padding: 24px 16px 40px;
+  }
+}

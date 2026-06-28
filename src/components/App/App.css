@@ -1,0 +1,5 @@
+/* App-level layout only; component styles live with their components. */
+
+.page {
+  position: relative;
+}

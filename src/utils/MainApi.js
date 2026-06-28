@@ -1,8 +1,11 @@
 import { USE_MOCK_MAIN, MAIN_API_BASE_URL, STORAGE_KEYS } from "./constants.js";
 
 function checkResponse(res) {
-  if (res.ok) return res.json();
-  return Promise.reject(`Error ${res.status}`);
+  return res.json().then((data) => {
+    if (res.ok) return data;
+    // Surface the back-end's error message (e.g. duplicate email) to the user.
+    return Promise.reject(data.message || `Error ${res.status}`);
+  });
 }
 
 /* ------------------------------------------------------------------ *

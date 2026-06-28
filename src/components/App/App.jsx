@@ -167,7 +167,7 @@ function App() {
   /* --------------------------- save / unsave ------------------------------ */
 
   function isArticleSaved(article) {
-    return savedArticles.some((a) => a.url === article.url);
+    return savedArticles.some((a) => a.link === article.link);
   }
 
   function handleSaveArticle(article) {
@@ -177,7 +177,7 @@ function App() {
       return;
     }
     const token = localStorage.getItem(STORAGE_KEYS.token);
-    const existing = savedArticles.find((a) => a.url === article.url);
+    const existing = savedArticles.find((a) => a.link === article.link);
 
     if (existing) {
       // Already saved → toggle off.
@@ -185,6 +185,7 @@ function App() {
       return;
     }
 
+    // Article is already normalized; attach the search keyword for the API.
     const payload = { ...article, keyword };
     MainApi.saveArticle(payload, token)
       .then((saved) => setSavedArticles((list) => [...list, saved]))

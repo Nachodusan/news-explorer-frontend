@@ -22,11 +22,15 @@ export const USE_MOCK_NEWS = !NEWS_API_KEY;
  * Custom API (your auth + saved-articles backend — Etapa 2)          *
  * ------------------------------------------------------------------ */
 
-// The custom backend is not built yet, so auth and saved articles are
-// simulated with localStorage. Flip to false once the server is ready.
-export const USE_MOCK_MAIN = true;
+// The custom backend (Etapa 2) is now live, so by default we talk to the real
+// API. For offline UI work you can set VITE_USE_MOCK_MAIN=true to fall back to
+// the localStorage simulation.
+export const USE_MOCK_MAIN = import.meta.env.VITE_USE_MOCK_MAIN === "true";
 
-export const MAIN_API_BASE_URL = "http://localhost:3001";
+// Base URL of your back-end. Override per environment with VITE_MAIN_API_URL
+// (e.g. your deployed domain). Defaults to the local server.
+export const MAIN_API_BASE_URL =
+  import.meta.env.VITE_MAIN_API_URL || "http://localhost:3001";
 
 /* ------------------------------------------------------------------ *
  * UI / storage                                                       *

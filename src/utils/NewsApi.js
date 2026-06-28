@@ -7,6 +7,7 @@ import {
   MESSAGES,
 } from "./constants.js";
 import { generateArticles } from "./mockData.js";
+import { normalizeArticle } from "./normalizeArticle.js";
 
 function checkResponse(res) {
   if (res.ok) {
@@ -39,7 +40,7 @@ export function searchNews(keyword) {
         } else if (term === "vacio") {
           resolve([]);
         } else {
-          resolve(generateArticles(keyword, 12));
+          resolve(generateArticles(keyword, 12).map(normalizeArticle));
         }
       }, 1200);
     });
@@ -55,5 +56,5 @@ export function searchNews(keyword) {
 
   return fetch(`${NEWS_API_BASE_URL}?${params.toString()}`)
     .then(checkResponse)
-    .then((data) => data.articles || []);
+    .then((data) => (data.articles || []).map(normalizeArticle));
 }

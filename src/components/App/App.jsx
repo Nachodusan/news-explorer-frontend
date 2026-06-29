@@ -3,7 +3,7 @@ import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 
 import "./App.css";
 import { CurrentUserContext } from "../../contexts/CurrentUserContext.js";
-import { CARDS_PER_PAGE, STORAGE_KEYS } from "../../utils/constants.js";
+import { CARDS_PER_PAGE, STORAGE_KEYS, MESSAGES } from "../../utils/constants.js";
 import { searchNews } from "../../utils/NewsApi.js";
 import * as MainApi from "../../utils/MainApi.js";
 
@@ -152,8 +152,10 @@ function App() {
         );
       })
       .catch((err) => {
+        // Always surface the standard request-error message to the user.
+        console.error("Búsqueda de noticias fallida:", err);
         setSearchResults([]);
-        setSearchError(typeof err === "string" ? err : "Algo salió mal");
+        setSearchError(MESSAGES.requestError);
       })
       .finally(() => setIsSearching(false));
   }

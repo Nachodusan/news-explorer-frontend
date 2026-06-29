@@ -1,54 +1,56 @@
 import {
-  USE_MOCK,
+  USE_MOCK_NEWS,
   NEWS_API_BASE_URL,
   NEWS_API_KEY,
+  NEWS_PAGE_SIZE,
+  SEARCH_DAYS_RANGE,
+  MESSAGES,
 } from "./constants.js";
 import { generateArticles } from "./mockData.js";
 
 function checkResponse(res) {
-  if (res.ok) return res.json();
+  if (res.ok) {
+    return res.json();
+  }
   return Promise.reject(`Error ${res.status}`);
 }
 
-// Returns the date string for `days` ago (used by the real NewsAPI request).
+// Returns the YYYY-MM-DD string for `days` ago (News API `from`/`to` params).
 function isoDaysAgo(days) {
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  return d.toISOString().split("T")[0];
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date.toISOString().split("T")[0];
 }
 
 // Search news by keyword. Resolves to an array of article objects in the
-// NewsAPI `articles[]` shape.
+// News API `articles[]` shape.
 export function searchNews(keyword) {
-  if (USE_MOCK) {
-    // Simulate network latency and an occasional empty result.
+  if (!keyword || !keyword.trim()) {
+    return Promise.reject(MESSAGES.emptyKeyword);
+  }
+
+  if (USE_MOCK_NEWS) {
+    // Simulate network latency and a couple of demo states.
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (!keyword || !keyword.trim()) {
-          reject("Por favor, introduce una palabra clave");
-          return;
-        }
-        // "error" keyword lets us demo the failure state.
-        if (keyword.trim().toLowerCase() === "error") {
-          reject("Algo salió mal");
-          return;
-        }
-        // "vacio" keyword demos the no-results state.
-        if (keyword.trim().toLowerCase() === "vacio") {
+        const term = keyword.trim().toLowerCase();
+        if (term === "error") {
+          reject(MESSAGES.requestError);
+        } else if (term === "vacio") {
           resolve([]);
-          return;
+        } else {
+          resolve(generateArticles(keyword, 12));
         }
-        resolve(generateArticles(keyword, 12));
       }, 1200);
     });
   }
 
   const params = new URLSearchParams({
-    q: keyword,
-    from: isoDaysAgo(7),
-    to: isoDaysAgo(0),
-    pageSize: "100",
+    q: keyword.trim(),
     apiKey: NEWS_API_KEY,
+    from: isoDaysAgo(SEARCH_DAYS_RANGE),
+    to: isoDaysAgo(0),
+    pageSize: String(NEWS_PAGE_SIZE),
   });
 
   return fetch(`${NEWS_API_BASE_URL}?${params.toString()}`)

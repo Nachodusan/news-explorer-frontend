@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./SearchForm.css";
+import { MESSAGES } from "../../utils/constants.js";
 
 function SearchForm({ onSearch }) {
   const [value, setValue] = useState("");
@@ -8,7 +9,7 @@ function SearchForm({ onSearch }) {
   function handleSubmit(e) {
     e.preventDefault();
     if (!value.trim()) {
-      setError("Por favor, introduce una palabra clave");
+      setError(MESSAGES.emptyKeyword);
       return;
     }
     setError("");

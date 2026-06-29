@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import PopupWithForm from "../PopupWithForm/PopupWithForm.jsx";
+import { useFormWithValidation } from "../../hooks/useFormWithValidation.js";
 import "./AuthFields.css";
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function LoginModal({
   isOpen,
@@ -12,33 +11,13 @@ function LoginModal({
   serverError,
   isLoading,
 }) {
-  const [values, setValues] = useState({ email: "", password: "" });
-  const [errors, setErrors] = useState({ email: "", password: "" });
+  const { values, errors, isValid, handleChange, resetForm } =
+    useFormWithValidation();
 
   // Reset the form each time the modal opens.
   useEffect(() => {
-    if (isOpen) {
-      setValues({ email: "", password: "" });
-      setErrors({ email: "", password: "" });
-    }
-  }, [isOpen]);
-
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setValues((v) => ({ ...v, [name]: value }));
-
-    let message = "";
-    if (name === "email" && value && !EMAIL_RE.test(value)) {
-      message = "Introduce un correo electrónico válido";
-    }
-    setErrors((prev) => ({ ...prev, [name]: message }));
-  }
-
-  const isValid =
-    EMAIL_RE.test(values.email) &&
-    values.password.length > 0 &&
-    !errors.email &&
-    !errors.password;
+    if (isOpen) resetForm({ email: "", password: "" });
+  }, [isOpen, resetForm]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -68,7 +47,7 @@ function LoginModal({
           type="email"
           name="email"
           placeholder="Introduce tu correo electrónico"
-          value={values.email}
+          value={values.email || ""}
           onChange={handleChange}
           required
         />
@@ -82,7 +61,7 @@ function LoginModal({
           type="password"
           name="password"
           placeholder="Introduce tu contraseña"
-          value={values.password}
+          value={values.password || ""}
           onChange={handleChange}
           required
         />

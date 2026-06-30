@@ -42,16 +42,19 @@ src/
 │   ├── PopupWithForm/ # base reutilizable de los modales
 │   ├── LoginModal/    # formulario de acceso
 │   ├── RegisterModal/ # formulario de inscripción
-│   ├── InfoTooltip/   # confirmación de registro
+│   ├── Notification/  # aviso de error al usuario (guardar/eliminar)
 │   └── ...            # About, Footer, Preloader, NotFound, ProtectedRoute
-├── fonts/             # fuentes locales (Inter, Roboto Slab) + @font-face
+├── hooks/             # useFormWithValidation (validación de formularios)
+├── fonts/             # fuentes locales (Roboto, Roboto Slab, Inter) + @font-face
+├── vendor/            # recursos third-party: normalize.css
 ├── images/            # iconos e imágenes en SVG
 ├── contexts/
 │   └── CurrentUserContext.js
 └── utils/
-    ├── constants.js   # configuración central (endpoints + USE_MOCK)
+    ├── constants.js   # configuración central (endpoints, flags mock, mensajes)
     ├── NewsApi.js     # búsqueda de noticias (mock o NewsAPI real)
     ├── MainApi.js     # auth + artículos guardados (mock o backend real)
+    ├── normalizeArticle.js # unifica forma News API / backend
     └── mockData.js    # generador de artículos simulados
 ```
 
@@ -59,24 +62,31 @@ src/
 > usa **Vite** (más rápido y la opción vigente en TripleTen). Si tu cohorte
 > exige CRA estrictamente, avísame y migro la configuración.
 
-## Modo simulado (mock) vs. backend real
+## Conectar la News API (Etapa 1.2)
 
-Actualmente la app funciona **sin backend**: la autenticación y los artículos
-guardados se simulan con `localStorage`, y las búsquedas devuelven artículos
-generados localmente. Esto está controlado por una sola bandera:
+1. Regístrate en [newsapi.org](https://newsapi.org) y copia tu API key.
+2. Copia `.env.example` a `.env` y pon tu clave:
 
-```js
-// src/utils/constants.js
-export const USE_MOCK = true; // ← cambiar a false cuando el backend esté listo
-```
+   ```
+   VITE_NEWS_API_KEY=tu_clave
+   ```
 
-Al poner `USE_MOCK = false`, los módulos `NewsApi.js` y `MainApi.js` pasan a usar
-`fetch()` contra:
+3. Reinicia `npm run dev`. A partir de ahí las búsquedas usan datos reales.
 
-- `MAIN_API_BASE_URL` — tu API propia de autenticación y almacenamiento
-  (`/signup`, `/signin`, `/users/me`, `/articles`).
-- `NEWS_API_BASE_URL` — la News API de terceros (idealmente a través de un proxy
-  en tu propio backend para no exponer la clave).
+La app cambia de modo automáticamente: **sin clave** usa datos simulados; **con
+clave** consulta la News API real. En desarrollo (`localhost`) las peticiones van
+a `newsapi.org`; en producción (`vite build`) se enrutan por el proxy de
+TripleTen (`nomoreparties.co/news`), porque la versión gratuita de News API solo
+permite peticiones desde localhost. El `.env` está ignorado por git.
+
+## Modo simulado (mock) vs. APIs reales
+
+Dos banderas independientes en `src/utils/constants.js`:
+
+- `USE_MOCK_NEWS` — se calcula solo: `false` cuando hay `VITE_NEWS_API_KEY`.
+- `USE_MOCK_MAIN` — `true` hasta que el backend propio (Etapa 2) esté listo;
+  entonces se pone en `false` y `MainApi.js` usa `fetch()` contra
+  `/signup`, `/signin`, `/users/me`, `/articles`.
 
 No hace falta tocar los componentes: las firmas de las funciones del API son las
 mismas en ambos modos.

@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import PopupWithForm from "../PopupWithForm/PopupWithForm.jsx";
+import { useFormWithValidation } from "../../hooks/useFormWithValidation.js";
 import "../LoginModal/AuthFields.css";
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function RegisterModal({
   isOpen,
@@ -12,40 +11,12 @@ function RegisterModal({
   serverError,
   isLoading,
 }) {
-  const [values, setValues] = useState({ email: "", password: "", name: "" });
-  const [errors, setErrors] = useState({ email: "", password: "", name: "" });
+  const { values, errors, isValid, handleChange, resetForm } =
+    useFormWithValidation();
 
   useEffect(() => {
-    if (isOpen) {
-      setValues({ email: "", password: "", name: "" });
-      setErrors({ email: "", password: "", name: "" });
-    }
-  }, [isOpen]);
-
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setValues((v) => ({ ...v, [name]: value }));
-
-    let message = "";
-    if (name === "email" && value && !EMAIL_RE.test(value)) {
-      message = "Introduce un correo electrónico válido";
-    }
-    if (name === "password" && value && value.length < 6) {
-      message = "La contraseña debe tener al menos 6 caracteres";
-    }
-    if (name === "name" && value && value.trim().length < 2) {
-      message = "El nombre debe tener al menos 2 caracteres";
-    }
-    setErrors((prev) => ({ ...prev, [name]: message }));
-  }
-
-  const isValid =
-    EMAIL_RE.test(values.email) &&
-    values.password.length >= 6 &&
-    values.name.trim().length >= 2 &&
-    !errors.email &&
-    !errors.password &&
-    !errors.name;
+    if (isOpen) resetForm({ email: "", password: "", name: "" });
+  }, [isOpen, resetForm]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -79,7 +50,7 @@ function RegisterModal({
           type="email"
           name="email"
           placeholder="Introduce tu correo electrónico"
-          value={values.email}
+          value={values.email || ""}
           onChange={handleChange}
           required
         />
@@ -93,8 +64,9 @@ function RegisterModal({
           type="password"
           name="password"
           placeholder="Introduce tu contraseña"
-          value={values.password}
+          value={values.password || ""}
           onChange={handleChange}
+          minLength={8}
           required
         />
         <span className="auth-field__error">{errors.password}</span>
@@ -107,8 +79,10 @@ function RegisterModal({
           type="text"
           name="name"
           placeholder="Introduce tu nombre de usuario"
-          value={values.name}
+          value={values.name || ""}
           onChange={handleChange}
+          minLength={2}
+          maxLength={30}
           required
         />
         <span className="auth-field__error">{errors.name}</span>

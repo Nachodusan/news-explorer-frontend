@@ -3,6 +3,7 @@ import NewsCardList from "../NewsCardList/NewsCardList.jsx";
 import Preloader from "../Preloader/Preloader.jsx";
 import NotFound from "../NotFound/NotFound.jsx";
 import About from "../About/About.jsx";
+import { MESSAGES } from "../../utils/constants.js";
 
 function Main({
   keyword,
@@ -20,16 +21,13 @@ function Main({
       {isSearching && <Preloader text="Buscando noticias..." />}
 
       {!isSearching && searchError && (
-        <NotFound
-          title="Algo salió mal"
-          subtitle="Lo sentimos, ha ocurrido un error durante la solicitud. Puede que haya un problema de conexión o que el servidor no responda. Inténtalo de nuevo más tarde."
-        />
+        <NotFound title="Algo salió mal" subtitle={searchError} />
       )}
 
       {!isSearching && !searchError && hasSearched && results.length === 0 && (
         <NotFound
-          title="No se ha encontrado nada"
-          subtitle="Lo sentimos, no hemos encontrado nada que coincida con tu búsqueda."
+          title={MESSAGES.nothingFound}
+          subtitle={MESSAGES.nothingFoundSubtitle}
         />
       )}
 

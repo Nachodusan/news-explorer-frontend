@@ -1,12 +1,15 @@
-import { USE_MOCK, MAIN_API_BASE_URL, STORAGE_KEYS } from "./constants.js";
+import { USE_MOCK_MAIN, MAIN_API_BASE_URL, STORAGE_KEYS } from "./constants.js";
 
 function checkResponse(res) {
-  if (res.ok) return res.json();
-  return Promise.reject(`Error ${res.status}`);
+  return res.json().then((data) => {
+    if (res.ok) return data;
+    // Surface the back-end's error message (e.g. duplicate email) to the user.
+    return Promise.reject(data.message || `Error ${res.status}`);
+  });
 }
 
 /* ------------------------------------------------------------------ *
- * Mock backend helpers (localStorage). Swapped out when USE_MOCK is  *
+ * Mock backend helpers (localStorage). Swapped out when USE_MOCK_MAIN is  *
  * false in favor of real fetch() calls to your custom API.           *
  * ------------------------------------------------------------------ */
 
@@ -45,7 +48,7 @@ function emailFromToken(token) {
  * ------------------------------------------------------------------ */
 
 export function register({ name, email, password }) {
-  if (USE_MOCK) {
+  if (USE_MOCK_MAIN) {
     const users = readStore(STORAGE_KEYS.users, []);
     if (users.some((u) => u.email === email)) {
       return delay().then(() =>
@@ -65,7 +68,7 @@ export function register({ name, email, password }) {
 }
 
 export function login({ email, password }) {
-  if (USE_MOCK) {
+  if (USE_MOCK_MAIN) {
     const users = readStore(STORAGE_KEYS.users, []);
     const user = users.find(
       (u) => u.email === email && u.password === password
@@ -86,7 +89,7 @@ export function login({ email, password }) {
 }
 
 export function getUserInfo(token) {
-  if (USE_MOCK) {
+  if (USE_MOCK_MAIN) {
     const email = emailFromToken(token);
     const users = readStore(STORAGE_KEYS.users, []);
     const user = users.find((u) => u.email === email);
@@ -109,7 +112,7 @@ function savedKeyFor(token) {
 }
 
 export function getSavedArticles(token) {
-  if (USE_MOCK) {
+  if (USE_MOCK_MAIN) {
     return delay(readStore(savedKeyFor(token), []), 300);
   }
 
@@ -119,7 +122,7 @@ export function getSavedArticles(token) {
 }
 
 export function saveArticle(article, token) {
-  if (USE_MOCK) {
+  if (USE_MOCK_MAIN) {
     const list = readStore(savedKeyFor(token), []);
     const saved = { ...article, _id: `${Date.now()}-${Math.random()}` };
     list.push(saved);
@@ -138,7 +141,7 @@ export function saveArticle(article, token) {
 }
 
 export function deleteArticle(articleId, token) {
-  if (USE_MOCK) {
+  if (USE_MOCK_MAIN) {
     const list = readStore(savedKeyFor(token), []).filter(
       (a) => a._id !== articleId
     );

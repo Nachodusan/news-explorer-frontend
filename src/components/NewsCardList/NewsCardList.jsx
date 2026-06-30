@@ -22,7 +22,7 @@ function NewsCardList({
     <ul className="card-list">
       {visible.map((article) => (
         <NewsCard
-          key={article._id || article.url}
+          key={article._id || article.link}
           article={article}
           keyword={article.keyword || keyword}
           isSaved={isSaved}

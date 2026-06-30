@@ -3,7 +3,7 @@ import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 
 import "./App.css";
 import { CurrentUserContext } from "../../contexts/CurrentUserContext.js";
-import { CARDS_PER_PAGE, STORAGE_KEYS } from "../../utils/constants.js";
+import { CARDS_PER_PAGE, STORAGE_KEYS, MESSAGES } from "../../utils/constants.js";
 import { searchNews } from "../../utils/NewsApi.js";
 import * as MainApi from "../../utils/MainApi.js";
 
@@ -14,7 +14,7 @@ import Footer from "../Footer/Footer.jsx";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute.jsx";
 import LoginModal from "../LoginModal/LoginModal.jsx";
 import RegisterModal from "../RegisterModal/RegisterModal.jsx";
-import InfoTooltip from "../InfoTooltip/InfoTooltip.jsx";
+import Notification from "../Notification/Notification.jsx";
 
 function App() {
   const location = useLocation();
@@ -22,11 +22,17 @@ function App() {
 
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // True while the stored token is being validated on mount, so protected
+  // routes don't redirect before we know whether the user is logged in.
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // Modals: "signin" | "signup" | "tooltip" | null
+  // Modals: "signin" | "signup" | null
   const [activeModal, setActiveModal] = useState(null);
   const [authError, setAuthError] = useState("");
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+
+  // Transient error message shown to the user (e.g. a failed save/delete).
+  const [notification, setNotification] = useState("");
 
   // Search state
   const [searchResults, setSearchResults] = useState([]);
@@ -43,18 +49,22 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem(STORAGE_KEYS.token);
-    if (!token) return;
-
-    MainApi.getUserInfo(token)
-      .then((user) => {
-        setCurrentUser(user);
-        setIsLoggedIn(true);
-        return MainApi.getSavedArticles(token);
-      })
-      .then((articles) => setSavedArticles(articles))
-      .catch(() => {
-        localStorage.removeItem(STORAGE_KEYS.token);
-      });
+    if (token) {
+      MainApi.getUserInfo(token)
+        .then((user) => {
+          setCurrentUser(user);
+          setIsLoggedIn(true);
+          // A saved-articles failure must not invalidate a valid session.
+          return MainApi.getSavedArticles(token)
+            .then((articles) => setSavedArticles(articles))
+            .catch(() => setSavedArticles([]));
+        })
+        // Only an invalid token (getUserInfo rejecting) clears the session.
+        .catch(() => localStorage.removeItem(STORAGE_KEYS.token))
+        .finally(() => setIsCheckingAuth(false));
+    } else {
+      setIsCheckingAuth(false);
+    }
 
     // Restore the last search so results survive a page refresh.
     try {
@@ -76,18 +86,18 @@ function App() {
     setAuthError("");
   }, []);
 
-  const openSignin = () => {
+  const openSignin = useCallback(() => {
     setAuthError("");
     setActiveModal("signin");
-  };
-  const openSignup = () => {
+  }, []);
+  const openSignup = useCallback(() => {
     setAuthError("");
     setActiveModal("signup");
-  };
+  }, []);
 
   // Close any open modal with Escape.
   useEffect(() => {
-    if (!activeModal) return;
+    if (!activeModal) return undefined;
     const onKey = (e) => {
       if (e.key === "Escape") closeModal();
     };
@@ -95,15 +105,29 @@ function App() {
     return () => document.removeEventListener("keydown", onKey);
   }, [activeModal, closeModal]);
 
+  // Auto-dismiss the error notification after a few seconds.
+  useEffect(() => {
+    if (!notification) return undefined;
+    const timer = setTimeout(() => setNotification(""), 5000);
+    return () => clearTimeout(timer);
+  }, [notification]);
+
   /* -------------------------------- auth ---------------------------------- */
 
-  function handleRegister({ name, email, password }) {
-    setIsAuthLoading(true);
-    setAuthError("");
-    MainApi.register({ name, email, password })
-      .then(() => setActiveModal("tooltip"))
-      .catch((err) => setAuthError(typeof err === "string" ? err : "Algo salió mal"))
-      .finally(() => setIsAuthLoading(false));
+  // Loads the user profile + saved articles once a valid token is available.
+  // Only getUserInfo failing means the token is invalid; a failure loading the
+  // saved articles must NOT invalidate an otherwise-valid session.
+  function loadSession(token) {
+    return MainApi.getUserInfo(token).then((user) => {
+      setCurrentUser(user);
+      setIsLoggedIn(true);
+      return MainApi.getSavedArticles(token)
+        .then((articles) => setSavedArticles(articles))
+        .catch((err) => {
+          console.error("No se pudieron cargar los artículos guardados:", err);
+          setSavedArticles([]);
+        });
+    });
   }
 
   function handleLogin({ email, password }) {
@@ -112,16 +136,24 @@ function App() {
     MainApi.login({ email, password })
       .then((data) => {
         localStorage.setItem(STORAGE_KEYS.token, data.token);
-        return MainApi.getUserInfo(data.token).then((user) => {
-          setCurrentUser(user);
-          setIsLoggedIn(true);
-          return MainApi.getSavedArticles(data.token);
-        });
+        return loadSession(data.token);
       })
-      .then((articles) => {
-        setSavedArticles(articles);
-        closeModal();
+      .then(() => closeModal())
+      .catch((err) => setAuthError(typeof err === "string" ? err : "Algo salió mal"))
+      .finally(() => setIsAuthLoading(false));
+  }
+
+  // On successful registration, log the user in automatically (signup → signin).
+  function handleRegister({ name, email, password }) {
+    setIsAuthLoading(true);
+    setAuthError("");
+    MainApi.register({ name, email, password })
+      .then(() => MainApi.login({ email, password }))
+      .then((data) => {
+        localStorage.setItem(STORAGE_KEYS.token, data.token);
+        return loadSession(data.token);
       })
+      .then(() => closeModal())
       .catch((err) => setAuthError(typeof err === "string" ? err : "Algo salió mal"))
       .finally(() => setIsAuthLoading(false));
   }
@@ -152,8 +184,10 @@ function App() {
         );
       })
       .catch((err) => {
+        // Always surface the standard request-error message to the user.
+        console.error("Búsqueda de noticias fallida:", err);
         setSearchResults([]);
-        setSearchError(typeof err === "string" ? err : "Algo salió mal");
+        setSearchError(MESSAGES.requestError);
       })
       .finally(() => setIsSearching(false));
   }
@@ -165,7 +199,7 @@ function App() {
   /* --------------------------- save / unsave ------------------------------ */
 
   function isArticleSaved(article) {
-    return savedArticles.some((a) => a.url === article.url);
+    return savedArticles.some((a) => a.link === article.link);
   }
 
   function handleSaveArticle(article) {
@@ -175,7 +209,7 @@ function App() {
       return;
     }
     const token = localStorage.getItem(STORAGE_KEYS.token);
-    const existing = savedArticles.find((a) => a.url === article.url);
+    const existing = savedArticles.find((a) => a.link === article.link);
 
     if (existing) {
       // Already saved → toggle off.
@@ -183,10 +217,14 @@ function App() {
       return;
     }
 
+    // Article is already normalized; attach the search keyword for the API.
     const payload = { ...article, keyword };
     MainApi.saveArticle(payload, token)
       .then((saved) => setSavedArticles((list) => [...list, saved]))
-      .catch((err) => console.error("No se pudo guardar el artículo:", err));
+      .catch((err) => {
+        console.error("No se pudo guardar el artículo:", err);
+        setNotification("No se pudo guardar el artículo. Inténtalo de nuevo.");
+      });
   }
 
   function handleDeleteArticle(article) {
@@ -196,7 +234,10 @@ function App() {
       .then(() =>
         setSavedArticles((list) => list.filter((a) => a._id !== id))
       )
-      .catch((err) => console.error("No se pudo eliminar el artículo:", err));
+      .catch((err) => {
+        console.error("No se pudo eliminar el artículo:", err);
+        setNotification("No se pudo eliminar el artículo. Inténtalo de nuevo.");
+      });
   }
 
   /* ------------------------------- render --------------------------------- */
@@ -236,6 +277,7 @@ function App() {
               element={
                 <ProtectedRoute
                   isLoggedIn={isLoggedIn}
+                  isCheckingAuth={isCheckingAuth}
                   onUnauthorized={openSignin}
                 >
                   <Header
@@ -297,10 +339,9 @@ function App() {
         serverError={authError}
         isLoading={isAuthLoading}
       />
-      <InfoTooltip
-        isOpen={activeModal === "tooltip"}
-        onClose={closeModal}
-        onSigninClick={openSignin}
+      <Notification
+        message={notification}
+        onClose={() => setNotification("")}
       />
     </CurrentUserContext.Provider>
   );

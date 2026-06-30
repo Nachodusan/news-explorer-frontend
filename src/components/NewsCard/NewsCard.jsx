@@ -43,7 +43,7 @@ function NewsCard({ article, keyword, isSaved, saved, onSave, onDelete }) {
       <div className="card__image-wrap">
         <img
           className="card__image"
-          src={article.urlToImage || placeholder}
+          src={article.image || placeholder}
           alt={article.title}
           onError={(e) => {
             e.currentTarget.src = placeholder;
@@ -75,16 +75,14 @@ function NewsCard({ article, keyword, isSaved, saved, onSave, onDelete }) {
 
       <a
         className="card__link"
-        href={article.url}
+        href={article.link}
         target="_blank"
         rel="noopener noreferrer"
       >
-        <p className="card__date">{formatDate(article.publishedAt)}</p>
+        <p className="card__date">{formatDate(article.date)}</p>
         <h3 className="card__title">{article.title}</h3>
-        <p className="card__text">{article.description}</p>
-        <p className="card__source">
-          {article.source?.name || article.author || "Desconocido"}
-        </p>
+        <p className="card__text">{article.text}</p>
+        <p className="card__source">{article.source || "Desconocido"}</p>
       </a>
     </li>
   );

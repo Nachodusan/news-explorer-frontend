@@ -42,8 +42,9 @@ src/
 │   ├── PopupWithForm/ # base reutilizable de los modales
 │   ├── LoginModal/    # formulario de acceso
 │   ├── RegisterModal/ # formulario de inscripción
-│   ├── InfoTooltip/   # confirmación de registro
+│   ├── Notification/  # aviso de error al usuario (guardar/eliminar)
 │   └── ...            # About, Footer, Preloader, NotFound, ProtectedRoute
+├── hooks/             # useFormWithValidation (validación de formularios)
 ├── fonts/             # fuentes locales (Roboto, Roboto Slab, Inter) + @font-face
 ├── vendor/            # recursos third-party: normalize.css
 ├── images/            # iconos e imágenes en SVG
@@ -53,6 +54,7 @@ src/
     ├── constants.js   # configuración central (endpoints, flags mock, mensajes)
     ├── NewsApi.js     # búsqueda de noticias (mock o NewsAPI real)
     ├── MainApi.js     # auth + artículos guardados (mock o backend real)
+    ├── normalizeArticle.js # unifica forma News API / backend
     └── mockData.js    # generador de artículos simulados
 ```
 

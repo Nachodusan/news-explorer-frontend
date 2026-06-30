@@ -54,12 +54,13 @@ function App() {
         .then((user) => {
           setCurrentUser(user);
           setIsLoggedIn(true);
-          return MainApi.getSavedArticles(token);
+          // A saved-articles failure must not invalidate a valid session.
+          return MainApi.getSavedArticles(token)
+            .then((articles) => setSavedArticles(articles))
+            .catch(() => setSavedArticles([]));
         })
-        .then((articles) => setSavedArticles(articles))
-        .catch(() => {
-          localStorage.removeItem(STORAGE_KEYS.token);
-        })
+        // Only an invalid token (getUserInfo rejecting) clears the session.
+        .catch(() => localStorage.removeItem(STORAGE_KEYS.token))
         .finally(() => setIsCheckingAuth(false));
     } else {
       setIsCheckingAuth(false);
@@ -85,14 +86,14 @@ function App() {
     setAuthError("");
   }, []);
 
-  const openSignin = () => {
+  const openSignin = useCallback(() => {
     setAuthError("");
     setActiveModal("signin");
-  };
-  const openSignup = () => {
+  }, []);
+  const openSignup = useCallback(() => {
     setAuthError("");
     setActiveModal("signup");
-  };
+  }, []);
 
   // Close any open modal with Escape.
   useEffect(() => {
@@ -114,14 +115,19 @@ function App() {
   /* -------------------------------- auth ---------------------------------- */
 
   // Loads the user profile + saved articles once a valid token is available.
+  // Only getUserInfo failing means the token is invalid; a failure loading the
+  // saved articles must NOT invalidate an otherwise-valid session.
   function loadSession(token) {
-    return MainApi.getUserInfo(token)
-      .then((user) => {
-        setCurrentUser(user);
-        setIsLoggedIn(true);
-        return MainApi.getSavedArticles(token);
-      })
-      .then((articles) => setSavedArticles(articles));
+    return MainApi.getUserInfo(token).then((user) => {
+      setCurrentUser(user);
+      setIsLoggedIn(true);
+      return MainApi.getSavedArticles(token)
+        .then((articles) => setSavedArticles(articles))
+        .catch((err) => {
+          console.error("No se pudieron cargar los artículos guardados:", err);
+          setSavedArticles([]);
+        });
+    });
   }
 
   function handleLogin({ email, password }) {
